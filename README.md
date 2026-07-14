@@ -20,7 +20,7 @@ backend, **PostgreSQL** (Neon), and **Google Gemini** for AI features.
 - **Job Matching** — compare a resume to a job description; see match %, missing skills, and recommendations.
 - **Admin Panel** — user management and analytics (planned).
 
-> **Status:** Week 1 complete — project scaffold, database, and JWT authentication are live. Resume parsing, ATS scoring, AI feedback, job matching, and deployment arrive in the following weeks (see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)).
+> **Status:** Week 2 complete — project scaffold, database, JWT authentication, resume upload (Cloudinary w/ local fallback), and resume parsing are live. ATS scoring, AI feedback, job matching, and deployment arrive in the following weeks (see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)).
 
 ---
 
@@ -93,7 +93,7 @@ cd "AI Resume Analyzer"
 ```bash
 cd backend
 cp .env.example .env          # fill in DATABASE_URL and JWT_SECRET_KEY
-uv sync --extra dev           # installs Python 3.12 + dependencies
+uv sync --extra dev --extra parsing --extra cloud   # install deps incl. parsers & Cloudinary
 uv run alembic upgrade head   # create database tables
 uv run uvicorn app.main:app --reload
 ```
@@ -124,8 +124,11 @@ The app runs at `http://localhost:5173` and proxies `/api` requests to the backe
 | `DB_SSL_MODE`             | SSL mode for Postgres (`require` for Neon)             |
 | `JWT_SECRET_KEY`          | Secret used to sign JWTs                               |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime (default 1440 = 1 day)       |
+| `BACKEND_BASE_URL`        | Base URL for locally-stored file URLs (default `http://localhost:8000`) |
+| `LOCAL_UPLOAD_DIR`        | Filesystem dir for local uploads fallback (`uploads`)  |
+| `LOCAL_UPLOAD_URL`        | URL segment that serves local uploads (`uploads`)      |
 | `GEMINI_API_KEY`          | Google Gemini API key (Week 4+)                        |
-| `CLOUDINARY_*`            | Cloudinary credentials (Week 2+)                       |
+| `CLOUDINARY_*`            | Cloudinary credentials (optional; local storage used if blank) |
 
 Generate a JWT secret:
 
@@ -156,7 +159,7 @@ asyncpg-compatible form automatically.
 ### Schema
 
 - **users** — `id`, `name`, `email`, `password_hash`, `is_active`, `is_superuser`, `created_at`
-- **resumes** — `id`, `user_id`, `file_url`, `file_name`, `ats_score`, `created_at`
+- **resumes** — `id`, `user_id`, `file_url`, `file_name`, `storage_id`, `content_type`, `ats_score`, `raw_text`, `parsed_data` (JSONB), `created_at`
 - **analyses** — `id`, `resume_id`, `strengths`, `weaknesses`, `recommendations`, `created_at`
 
 See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full data model.
@@ -165,14 +168,18 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full data model.
 
 ## 📡 API Endpoints
 
-| Method | Endpoint                  | Description                |
-| ------ | ------------------------- | -------------------------- |
-| `POST` | `/api/v1/auth/register`   | Create a new account       |
-| `POST` | `/api/v1/auth/login`      | Authenticate & get JWT     |
-| `GET`  | `/api/v1/auth/me`         | Get current user           |
-| `POST` | `/api/v1/auth/forgot-password` | Request a reset token |
-| `POST` | `/api/v1/auth/reset-password`  | Reset password        |
-| `GET`  | `/health`                 | Service health check       |
+| Method   | Endpoint                       | Description                |
+| -------- | ------------------------------ | -------------------------- |
+| `POST`   | `/api/v1/auth/register`        | Create a new account       |
+| `POST`   | `/api/v1/auth/login`           | Authenticate & get JWT     |
+| `GET`    | `/api/v1/auth/me`              | Get current user           |
+| `POST`   | `/api/v1/auth/forgot-password` | Request a reset token      |
+| `POST`   | `/api/v1/auth/reset-password`  | Reset password             |
+| `POST`   | `/api/v1/resume/upload`        | Upload + parse a resume    |
+| `GET`    | `/api/v1/resume`               | List your resumes          |
+| `GET`    | `/api/v1/resume/{id}`          | Get a resume + parsed data |
+| `DELETE` | `/api/v1/resume/{id}`          | Delete a resume            |
+| `GET`    | `/health`                      | Service health check       |
 
 Full interactive documentation is available at `/docs` when the backend is running.
 

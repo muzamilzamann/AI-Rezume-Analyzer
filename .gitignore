@@ -51,3 +51,7 @@ logs/
 # ---------------- Misc ------------------
 *.sqlite3
 .cache/
+
+# ---------------- Uploaded files --------
+backend/uploads/
+uploads/

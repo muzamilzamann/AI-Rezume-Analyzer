@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     environment: Literal["dev", "staging", "prod"] = "dev"
     api_v1_prefix: str = "/api/v1"
     frontend_url: str = "http://localhost:5173"
+    backend_base_url: str = "http://localhost:8000"
+    # Local file storage fallback (used when Cloudinary is not configured).
+    local_upload_dir: str = "uploads"
+    local_upload_url: str = "uploads"
 
     # Database. Accepts Neon's plain postgresql://...?sslmode=require string.
     database_url: str = Field(
@@ -38,6 +42,7 @@ class Settings(BaseSettings):
 
     # AI - Google Gemini
     gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.0-flash"
 
     # Cloudinary
     cloudinary_cloud_name: str = ""
