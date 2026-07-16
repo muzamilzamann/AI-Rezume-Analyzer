@@ -1,0 +1,55 @@
+# Render Blueprint (infrastructure-as-code).
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Deploys the FastAPI backend as a Docker web service. The build uses the
+# repository root as the Docker context (see .dockerignore) and the Dockerfile
+# at docker/backend.Dockerfile, which runs Alembic migrations on startup and
+# binds to $PORT (injected by Render).
+#
+# Secrets marked `sync: false` are prompted for during the first "New Blueprint"
+# sync in the Render dashboard. They can also be added later under the service's
+# Environment tab.
+#
+# NOTE: Render's filesystem is ephemeral. For uploaded resumes to survive
+# redeploys, either set the CLOUDINARY_* secrets (recommended) or attach a
+# persistent disk to this service (paid plan).
+
+services:
+  - type: web
+    name: resume-analyzer-backend
+    runtime: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./docker/backend.Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: commit
+    envVars:
+      # --- Required secrets (prompted at first sync) ---
+      - key: DATABASE_URL
+        sync: false # Neon connection string, e.g. postgresql://user:pass@host/db?sslmode=require
+      - key: JWT_SECRET_KEY
+        generateValue: true # Render generates a strong secret automatically
+      - key: FRONTEND_URL
+        sync: false # Your deployed frontend origin, e.g. https://your-app.vercel.app (enables CORS)
+
+      # --- Non-secret config ---
+      - key: ENVIRONMENT
+        value: prod
+      - key: DB_SSL_MODE
+        value: require
+      - key: BACKEND_BASE_URL
+        fromService:
+          name: resume-analyzer-backend
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
+      # --- Optional integrations (prompted at first sync) ---
+      - key: GEMINI_API_KEY
+        sync: false # Enables AI feedback (Week 4); blank = rule-based fallback
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false # Optional: leave blank to use ephemeral local storage
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

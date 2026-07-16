@@ -20,7 +20,7 @@ backend, **PostgreSQL** (Neon), and **Google Gemini** for AI features.
 - **Job Matching** — compare a resume to a job description; see match %, missing skills, and recommendations.
 - **Admin Panel** — user management and analytics (planned).
 
-> **Status:** Week 2 complete — project scaffold, database, JWT authentication, resume upload (Cloudinary w/ local fallback), and resume parsing are live. ATS scoring, AI feedback, job matching, and deployment arrive in the following weeks (see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)).
+> **Status:** Core features complete — authentication, resume upload & parsing, ATS scoring, AI feedback (Gemini), job matching, an admin panel, Docker, and CI/CD are all live. Cloud deployment (Vercel + Render/Railway + Neon) is fully configured — see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ---
 
@@ -168,18 +168,29 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for the full data model.
 
 ## 📡 API Endpoints
 
-| Method   | Endpoint                       | Description                |
-| -------- | ------------------------------ | -------------------------- |
-| `POST`   | `/api/v1/auth/register`        | Create a new account       |
-| `POST`   | `/api/v1/auth/login`           | Authenticate & get JWT     |
-| `GET`    | `/api/v1/auth/me`              | Get current user           |
-| `POST`   | `/api/v1/auth/forgot-password` | Request a reset token      |
-| `POST`   | `/api/v1/auth/reset-password`  | Reset password             |
-| `POST`   | `/api/v1/resume/upload`        | Upload + parse a resume    |
-| `GET`    | `/api/v1/resume`               | List your resumes          |
-| `GET`    | `/api/v1/resume/{id}`          | Get a resume + parsed data |
-| `DELETE` | `/api/v1/resume/{id}`          | Delete a resume            |
-| `GET`    | `/health`                      | Service health check       |
+| Method   | Endpoint                          | Description                        |
+| -------- | --------------------------------- | ---------------------------------- |
+| `POST`   | `/api/v1/auth/register`           | Create a new account               |
+| `POST`   | `/api/v1/auth/login`              | Authenticate & get JWT             |
+| `GET`    | `/api/v1/auth/me`                 | Get current user                   |
+| `POST`   | `/api/v1/auth/forgot-password`    | Request a reset token              |
+| `POST`   | `/api/v1/auth/reset-password`     | Reset password                     |
+| `POST`   | `/api/v1/resume/upload`           | Upload + parse a resume            |
+| `GET`    | `/api/v1/resume`                  | List your resumes                  |
+| `GET`    | `/api/v1/resume/{id}`             | Get a resume + parsed data         |
+| `GET`    | `/api/v1/resume/{id}/parsed`      | Get structured parse only          |
+| `DELETE` | `/api/v1/resume/{id}`             | Delete a resume                    |
+| `POST`   | `/api/v1/analysis/run`            | Run ATS scoring on a resume        |
+| `GET`    | `/api/v1/analysis/{resume_id}`    | Fetch a stored analysis            |
+| `POST`   | `/api/v1/analysis/ai-feedback`    | Generate AI (Gemini) feedback      |
+| `POST`   | `/api/v1/job-match`               | Match resume vs. job description   |
+| `GET`    | `/api/v1/job-match/{resume_id}`   | List job matches for a resume      |
+| `GET`    | `/api/v1/job-match/result/{id}`   | Fetch a single job match           |
+| `DELETE` | `/api/v1/job-match/result/{id}`   | Delete a job match                 |
+| `GET`    | `/api/v1/admin/stats`             | Platform analytics (superuser)     |
+| `GET`    | `/api/v1/admin/users`             | List users (superuser)             |
+| `PATCH`  | `/api/v1/admin/users/{id}`        | Toggle user active/superuser       |
+| `GET`    | `/health`                         | Service health check               |
 
 Full interactive documentation is available at `/docs` when the backend is running.
 
@@ -204,6 +215,8 @@ npm run build
 ## 📅 Roadmap
 
 An 8-week development plan is documented in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+Ready to ship? Follow the step-by-step [deployment guide](docs/DEPLOYMENT.md)
+(Vercel + Render/Railway + Neon).
 
 ---
 

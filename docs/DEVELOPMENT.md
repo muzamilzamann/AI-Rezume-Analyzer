@@ -6,12 +6,12 @@
 | ---- | ------------------------------------------------ | ------ |
 | 1    | Project setup, database, authentication          | ✅ Done |
 | 2    | Resume upload (Cloudinary) and parsing           | ✅ Done |
-| 3    | ATS scoring system                               | ⏳     |
-| 4    | AI feedback generation (Gemini)                  | ⏳     |
-| 5    | Job description matching                         | ⏳     |
-| 6    | Dashboard and admin panel                        | ⏳     |
-| 7    | Docker, testing, and CI/CD                       | ⏳     |
-| 8    | Deploy frontend, backend, and database           | ⏳     |
+| 3    | ATS scoring system                               | ✅ Done |
+| 4    | AI feedback generation (Gemini)                  | ✅ Done |
+| 5    | Job description matching                         | ✅ Done |
+| 6    | Dashboard and admin panel                        | ✅ Done |
+| 7    | Docker, testing, and CI/CD                       | ✅ Done |
+| 8    | Deploy frontend, backend, and database           | ✅ Config ready — see [DEPLOYMENT.md](DEPLOYMENT.md) |
 
 ---
 

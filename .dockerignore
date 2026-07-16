@@ -1,0 +1,38 @@
+# Build context is the repository root for both backend and frontend images.
+# Keep the context small and free of local state / secrets.
+
+# ---- Python (backend) ----
+**/.venv/
+**/venv/
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+**/.ruff_cache/
+**/*.egg-info/
+**/*.sqlite3
+
+# ---- Node (frontend) ----
+**/node_modules/
+**/dist/
+**/.vite/
+**/*.tsbuildinfo
+
+# ---- Env files / secrets ----
+**/.env
+**/.env.*
+!**/.env.example
+
+# ---- Git / CI / editor ----
+.git/
+.github/
+**/.vscode/
+**/.idea/
+**/.DS_Store
+**/Thumbs.db
+
+# ---- App runtime / uploads ----
+backend/uploads/
+backend/tests/
+
+# ---- Docs (not needed at runtime) ----
+docs/
